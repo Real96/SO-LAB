@@ -2,10 +2,10 @@
 
 Solutions of almost all SO lab past exams
 
-# Useful links
+## Useful links
 - Past exams: https://git.crypto.dmi.unict.it/mario.diraimondo/operating-systems.2021-2022/src/branch/master/lab/exams
 
-- Cose Examples: https://git.crypto.dmi.unict.it/mario.diraimondo/operating-systems.2021-2022/src/branch/master/lab/examples
+- Code examples: https://git.crypto.dmi.unict.it/mario.diraimondo/operating-systems.2021-2022/src/branch/master/lab/examples
 
 - Other exams solutions:
     - https://github.com/Herbrant/Tutorato-Sistemi-Operativi/tree/main/exams
