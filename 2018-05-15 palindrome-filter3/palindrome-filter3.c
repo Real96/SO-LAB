@@ -125,7 +125,7 @@ void r_child(int shm_des, int sem_des, char *argv) {
 	WAIT(sem_des, S_R);
 	data->done = 1;
 	SIGNAL(sem_des, S_P);
-	munmap(&file, sb.st_size);
+	munmap(file, sb.st_size);
 
 	exit(0);
 }

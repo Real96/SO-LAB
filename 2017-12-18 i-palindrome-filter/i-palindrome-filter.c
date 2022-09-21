@@ -86,7 +86,7 @@ void r_child(const char *pathname1, const char *pathname2, char input, char *arg
 	dprintf(pfd, "-1\n");
 
 	if (input) {
-		munmap(&data, sb.st_size);
+		munmap(data, sb.st_size);
 		close(fd);
 	}
 

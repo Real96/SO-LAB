@@ -85,7 +85,7 @@ void t_child(int msgq_des, int id, char *argv) {
 	}
 
 	printf("\n");
-	munmap(&data, sb.st_size);
+	munmap(data, sb.st_size);
 
 	exit(0);
 }

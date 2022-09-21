@@ -74,7 +74,7 @@ void r_child(int pipefd, char *argv) {
 	}
 
 	dprintf(pipefd, "-1");
-	munmap(NULL, sb.st_size);
+	munmap(data, sb.st_size);
 
 	exit(0);
 }
