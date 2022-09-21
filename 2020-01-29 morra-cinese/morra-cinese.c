@@ -72,8 +72,15 @@ int init_sem() {
 	return sem_des;
 }
 
-void p_child(shm *data, int sem_des, int id) {
+void p_child(int shm_des, int sem_des, int id) {
 	srand(time(NULL) + id);
+	shm *data;
+
+	if ((data = (shm *)shmat(shm_des, NULL, 0)) == (shm *)-1) {
+		perror("shmat");
+		exit(1);
+	}
+
 	char *move[3] = {"carta", "forbice", "sasso"};
 
 	while (1) {
@@ -106,7 +113,14 @@ void p_child(shm *data, int sem_des, int id) {
 	exit(0);
 }
 
-void g_child(shm *data, int sem_des) {
+void g_child(int shm_des, int sem_des) {
+	shm *data;
+
+	if ((data = (shm *)shmat(shm_des, NULL, 0)) == (shm *)-1) {
+		perror("shmat");
+		exit(1);
+	}
+
 	int matches = 1;
 
 	while (1) {
@@ -139,7 +153,16 @@ void g_child(shm *data, int sem_des) {
 	exit(0);
 }
 
-void t_child(shm *data, int sem_des, int matches) {
+void t_child(int shm_des, int sem_des, int matches) {
+	shm *data;
+
+	if ((data = (shm *)shmat(shm_des, NULL, 0)) == (shm *)-1) {
+		perror("shmat");
+		exit(1);
+	}
+
+	data->done = 0;
+
 	int match = 1;
 	int winners[2] = {0, 0};
 
@@ -182,27 +205,19 @@ int main(int argc, char **argv) {
 	int matches = atoi(argv[1]);
 	int shm_des = init_shm();
 	int sem_des = init_sem();
-	shm *data;
-
-	if ((data = (shm *)shmat(shm_des, NULL, 0)) == (shm *)-1) {
-		perror("shmat");
-		exit(1);
-	}
-
-	data->done = 0;
 	// P
 	for (int i = 0; i < 2; i++) {
 		if (!fork()) {
-			p_child(data, sem_des, i);
+			p_child(shm_des, sem_des, i);
 		}
 	}
 	// G
 	if (!fork()) {
-		g_child(data, sem_des);
+		g_child(shm_des, sem_des);
 	}
 	// T
 	if (!fork()) {
-		t_child(data, sem_des, matches);
+		t_child(shm_des, sem_des, matches);
 	}
 
 	for (int i = 0; i < 4; i++) {

@@ -85,7 +85,14 @@ int init_sem() {
 	return sem_des;
 }
 
-void l_child(shm *data, int sem_des, int msgq_des, char id) {
+void l_child(int shm_des, int sem_des, int msgq_des, char id) {
+	shm *data;
+
+	if ((data = (shm *)shmat(shm_des, NULL, 0)) == (shm *)-1) {
+		perror("shmat");
+		exit(1);
+	}
+
 	msg mess_l;
 	mess_l.type = 1;
 	mess_l.id = id;
@@ -193,10 +200,17 @@ void s_child(int sem_des, int msgq_des) {
 	exit(0);
 }
 
-void p_father(shm *data, int sem_des, FILE *fd) {
+void p_father(int shm_des, int sem_des, FILE *fd) {
+	shm *data;
+
+	if ((data = (shm *)shmat(shm_des, NULL, 0)) == (shm *)-1) {
+		perror("shmat");
+		exit(1);
+	}
+
+	data->done = 0;
 	char line[LINE_DIM];
 	int line_n = 0;
-	data->done = 0;
 
 	while (fgets(line, LINE_DIM, fd)) {
 		if (line[strlen(line) - 1] == '\n') {
@@ -242,20 +256,14 @@ int main(int argc, char **argv) {
 	}
 
 	int shm_des = init_shm();
-	shm *data;
-
-	if ((data = (shm *)shmat(shm_des, NULL, 0)) == (shm *)-1) {
-		perror("shmat");
-		exit(1);
-	}
 	// L
 	for (int i = 0; i < LETTERS_NUM; i++) {
 		if (!fork()) {
-			l_child(data, sem_des, msgq_des, i);
+			l_child(shm_des, sem_des, msgq_des, i);
 		}
 	}
 	//P
-	p_father(data, sem_des, fd);
+	p_father(shm_des, sem_des, fd);
 	fclose(fd);
 
 	for (int i = 0; i < LETTERS_NUM + 1; i++) {

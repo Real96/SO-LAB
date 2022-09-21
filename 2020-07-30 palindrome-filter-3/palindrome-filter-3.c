@@ -65,7 +65,7 @@ int init_sem() {
 	return sem_des;
 }
 
-void r_child(shm *data, int sem_des, char *argv) {
+void r_child(int shm_des, int sem_des, char *argv) {
 	FILE *fd;
 
 	if ((fd = fopen(argv, "r")) == NULL) {
@@ -73,6 +73,14 @@ void r_child(shm *data, int sem_des, char *argv) {
 		exit(1);
 	}
 
+	shm *data;
+
+	if ((data = (shm *)shmat(shm_des, NULL, 0)) == (shm *)-1) {
+		perror("shmat");
+		exit(1);
+	}
+
+	data->done = 0;
 	char word[MAX_LEN];
 
 	while (fgets(word, MAX_LEN, fd)) {
@@ -94,12 +102,19 @@ void r_child(shm *data, int sem_des, char *argv) {
 	exit(0);
 }
 
-void w_child(shm *data, int sem_des, char *argv) {
+void w_child(int shm_des, int sem_des, char *argv) {
 	FILE *fd;
 
 	if ((fd = fopen(argv, "w")) == NULL) {
 		perror("fopen W");
 		exit(0);
+	}
+
+	shm *data;
+
+	if ((data = (shm *)shmat(shm_des, NULL, 0)) == (shm *)-1) {
+		perror("shmat");
+		exit(1);
 	}
 
 	while (1) {
@@ -120,7 +135,14 @@ void w_child(shm *data, int sem_des, char *argv) {
 	exit(0);
 }
 
-void p_father(shm *data, int sem_des) {
+void p_father(int shm_des, int sem_des) {
+	shm *data;
+
+	if ((data = (shm *)shmat(shm_des, NULL, 0)) == (shm *)-1) {
+		perror("shmat");
+		exit(1);
+	}
+
 	while (1) {
 		WAIT(sem_des, S_P);
 
@@ -154,24 +176,17 @@ int main(int argc, char **argv) {
 
 	int shm_des = init_shm();
 	int sem_des = init_sem();
-	shm *data;
 
-	if ((data = (shm *)shmat(shm_des, NULL, 0)) == (shm *)-1) {
-		perror("shmat");
-		exit(1);
-	}
-
-	data->done = 0;
 	// R
 	if (!fork()) {
-		r_child(data, sem_des, argv[1]);
+		r_child(shm_des, sem_des, argv[1]);
 	}
 	// W
 	if (!fork()) {
-		w_child(data, sem_des, argv[2]);
+		w_child(shm_des, sem_des, argv[2]);
 	}
 
-	p_father(data, sem_des);
+	p_father(shm_des, sem_des);
 
 	for (int i = 0; i < 2; i++) {
 		wait(NULL);

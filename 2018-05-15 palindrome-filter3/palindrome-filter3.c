@@ -68,7 +68,7 @@ int init_sem() {
 	return sem_des;
 }
 
-void r_child(int shm_des, int sem_des, char *argv) {
+void r_child(shm *data, int shm_des, int sem_des, char *argv) {
 	int fd;
 
 	if ((fd = open(argv, O_RDONLY)) == -1) {
@@ -96,13 +96,6 @@ void r_child(int shm_des, int sem_des, char *argv) {
 	}
 
 	close(fd);
-
-	shm *data;
-
-	if ((data = (shm *)shmat(shm_des, NULL, 0)) == (shm *)-1) {
-		perror("shmat R");
-		exit(1);
-	}
 
 	data->done = 0;
 	char word[WORD_DIM];
@@ -177,16 +170,15 @@ int main(int argc, char **argv) {
 	}
 
 	int sem_des = init_sem();
-	// R
-	if (!fork()) {
-		r_child(shm_des[0], sem_des, argv[1]);
-	}
-
 	shm *data1;
 
 	if ((data1 = (shm *)shmat(shm_des[0], NULL, 0)) == (shm *)-1) {
 		perror("shmat P");
 		exit(1);
+	}
+	// R
+	if (!fork()) {
+		r_child(data1, shm_des[0], sem_des, argv[1]);
 	}
 
 	shm *data2;
