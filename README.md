@@ -1,6 +1,6 @@
 # SO-LAB
 
-Solutions of almost all SO lab past exams
+Solutions of almost all OS lab past exams
 
 ## Useful links
 - Past exams: https://git.crypto.dmi.unict.it/mario.diraimondo/operating-systems.2021-2022/src/branch/master/lab/exams
